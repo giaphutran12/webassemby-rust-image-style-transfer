@@ -1,0 +1,24 @@
+{
+  "name": "webassembly-image-transfer",
+  "version": "1.0.0",
+  "description": "Image style transfer using WebAssembly and Rust",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "npm run dev:frontend",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:frontend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:rust": "cd rust-backend && cargo build --target wasm32-unknown-unknown",
+    "build:wasm": "npm run build:rust && wasm-pack build rust-backend --target web",
+    "setup": "npm install && npm run setup:rust",
+    "setup:rust": "cd rust-backend && cargo install wasm-pack"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
