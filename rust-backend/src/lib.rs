@@ -335,41 +335,105 @@ fn apply_picasso_style(img: &DynamicImage) -> DynamicImage {
 }
 
 fn apply_cyberpunk_style(img: &DynamicImage) -> DynamicImage {
-    let mut processed = img.clone();
-    
-    // Cyberpunk style: neon colors, high saturation, futuristic look
-    let (width, height) = processed.dimensions();
-    let mut new_img = RgbaImage::new(width, height);
-    
-    for y in 0..height {
-        for x in 0..width {
-            let pixel = processed.get_pixel(x, y);
-            let mut new_pixel = pixel;
-            
-            // Enhance neon colors
-            new_pixel[0] = (pixel[0] as f32 * 1.5).min(255.0) as u8; // Red
-            new_pixel[1] = (pixel[1] as f32 * 0.8).min(255.0) as u8; // Green
-            new_pixel[2] = (pixel[2] as f32 * 1.6).min(255.0) as u8; // Blue
-            
-            // Add neon glow effect
-            if pixel[0] > 200 || pixel[2] > 200 {
-                new_pixel[0] = 255;
-                new_pixel[1] = 0;
-                new_pixel[2] = 255;
+    // Enhanced Cyberpunk: teal-magenta grade, neon bloom, edge glow, light chromatic aberration
+    let (width, height) = img.dimensions();
+    let src = img.to_rgba8();
+    let mut out = RgbaImage::new(width, height);
+
+    let idx = |x: i32, y: i32| -> usize {
+        let xx = x.clamp(0, (width as i32) - 1) as u32;
+        let yy = y.clamp(0, (height as i32) - 1) as u32;
+        ((yy * width + xx) * 4) as usize
+    };
+
+    let lum = |i: usize| -> f32 {
+        let r = src.as_raw()[i] as f32 / 255.0;
+        let g = src.as_raw()[i + 1] as f32 / 255.0;
+        let b = src.as_raw()[i + 2] as f32 / 255.0;
+        0.2126 * r + 0.7152 * g + 0.0722 * b
+    };
+
+    for y in 0..(height as i32) {
+        for x in 0..(width as i32) {
+            let i = idx(x, y);
+            let r0 = src.as_raw()[i] as f32 / 255.0;
+            let g0 = src.as_raw()[i + 1] as f32 / 255.0;
+            let b0 = src.as_raw()[i + 2] as f32 / 255.0;
+            let a = src.as_raw()[i + 3];
+
+            // Base grade: push shadows to teal/blue, mids to magenta, cut green a bit
+            let l = lum(i);
+            let shadows = (1.0 - l).max(0.0).powf(2.0);
+            let highlights = l.powf(2.0);
+            let mids = (1.0 - shadows - highlights).max(0.0);
+
+            let mut r = r0 * 1.05 + 0.10 * mids + 0.08 * highlights; // magenta/pink
+            let mut g = g0 * 0.85 - 0.05 * mids;                      // trim green
+            let mut b = b0 * 1.25 + 0.20 * shadows + 0.06 * mids;     // teal/blue push
+
+            // Saturation boost
+            let avg = (r + g + b) / 3.0;
+            let s_gain = 0.35;
+            r = avg + (r - avg) * (1.0 + s_gain);
+            g = avg + (g - avg) * (1.0 + s_gain);
+            b = avg + (b - avg) * (1.0 + s_gain);
+
+            // Highlight mask (for bloom)
+            let bright = l > 0.70;
+            let mut bloom = [0.0f32; 3];
+            if bright {
+                // small radius blur for neon bloom
+                let mut wsum = 0.0;
+                for oy in -2..=2 {
+                    for ox in -2..=2 {
+                        let di = idx(x + ox, y + oy);
+                        let ll = lum(di);
+                        if ll > 0.70 {
+                            let w = 1.0 / (1.0 + (ox * ox + oy * oy) as f32);
+                            bloom[0] += src.as_raw()[di] as f32 / 255.0 * w;
+                            bloom[1] += src.as_raw()[di + 1] as f32 / 255.0 * w;
+                            bloom[2] += src.as_raw()[di + 2] as f32 / 255.0 * w;
+                            wsum += w;
+                        }
+                    }
+                }
+                if wsum > 0.0 {
+                    bloom[0] = (bloom[0] / wsum) * 0.9 + 0.1; // bias toward neon
+                    bloom[1] = (bloom[1] / wsum) * 0.4 + 0.05;
+                    bloom[2] = (bloom[2] / wsum) * 1.1 + 0.2;
+                    r += bloom[0] * 0.35;
+                    g += bloom[1] * 0.20;
+                    b += bloom[2] * 0.45;
+                }
             }
-            
-            // Add scan lines effect
-            if y % 2 == 0 {
-                new_pixel[0] = (new_pixel[0] as u16 + 20).min(255) as u8;
-                new_pixel[1] = (new_pixel[1] as u16 + 20).min(255) as u8;
-                new_pixel[2] = (new_pixel[2] as u16 + 20).min(255) as u8;
+
+            // Edge glow using Sobel magnitude
+            let gx = lum(idx(x + 1, y)) - lum(idx(x - 1, y));
+            let gy = lum(idx(x, y + 1)) - lum(idx(x, y - 1));
+            let grad = (gx * gx + gy * gy).sqrt();
+            let edge = ((grad - 0.08) / 0.5).clamp(0.0, 1.0);
+            r += edge * 0.15;   // pink edge
+            b += edge * 0.25;   // cyan edge
+
+            // Subtle chromatic aberration on edges: offset R and B
+            if edge > 0.0 {
+                let ir = idx(x + 1, y);
+                let ib = idx(x - 1, y);
+                r = (r + src.as_raw()[ir] as f32 / 255.0 * 0.5) / 1.5;
+                b = (b + src.as_raw()[ib + 2] as f32 / 255.0 * 0.5) / 1.5;
             }
-            
-            new_img.put_pixel(x, y, new_pixel);
+
+            // Clamp
+            let to_u8 = |v: f32| (v.clamp(0.0, 1.0) * 255.0) as u8;
+            out.put_pixel(
+                x as u32,
+                y as u32,
+                Rgba([to_u8(r), to_u8(g), to_u8(b), a]),
+            );
         }
     }
-    
-    DynamicImage::ImageRgba8(new_img)
+
+    DynamicImage::ImageRgba8(out)
 }
 
 // Simple random number generator for effects
