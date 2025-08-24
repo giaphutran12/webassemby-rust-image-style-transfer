@@ -1,5 +1,6 @@
 use wasm_bindgen::prelude::*;
 use image::{DynamicImage, ImageBuffer, Rgba, RgbaImage, GenericImageView};
+use std::f32::consts::PI;
 use serde::{Deserialize, Serialize};
 use std::io::Cursor;
 
@@ -76,35 +77,126 @@ pub fn process_image_style(
 }
 
 fn apply_van_gogh_style(img: &DynamicImage) -> DynamicImage {
-    let mut processed = img.clone();
-    
-    // Van Gogh style: enhance yellows and blues, add brush stroke effect
-    let (width, height) = processed.dimensions();
-    let mut new_img = RgbaImage::new(width, height);
-    
-    for y in 0..height {
-        for x in 0..width {
-            let pixel = processed.get_pixel(x, y);
-            let mut new_pixel = pixel;
-            
-            // Enhance yellows and blues
-            new_pixel[0] = (pixel[0] as f32 * 1.2).min(255.0) as u8; // Red
-            new_pixel[1] = (pixel[1] as f32 * 1.3).min(255.0) as u8; // Green (yellow)
-            new_pixel[2] = (pixel[2] as f32 * 1.4).min(255.0) as u8; // Blue
-            
-            // Add some noise for brush stroke effect
-            if x % 3 == 0 && y % 3 == 0 {
-                let noise = (rand::random::<u8>() as f32 * 0.1) as u8;
-                new_pixel[0] = (new_pixel[0] as u16 + noise as u16).min(255) as u8;
-                new_pixel[1] = (new_pixel[1] as u16 + noise as u16).min(255) as u8;
-                new_pixel[2] = (new_pixel[2] as u16 + noise as u16).min(255) as u8;
+    // Van Gogh-inspired: long oriented strokes following isophotes + gentle swirl field,
+    // plus a palette tilt towards yellows and blues.
+    let (width, height) = img.dimensions();
+    let src = img.to_rgba8();
+    let mut out = RgbaImage::new(width, height);
+
+    // Parameters
+    let stroke_len: i32 = ((width.max(height) as f32) * 0.015).clamp(6.0, 18.0) as i32; // 6..18 pixels
+    let sigma_t: f32 = (stroke_len as f32) * 0.5; // Gaussian along stroke
+    let swirl_strength: f32 = 0.25; // radians at center
+    let swirl_radius: f32 = (width.min(height) as f32) * 0.45;
+
+    // Helpers
+    let idx = |x: i32, y: i32| -> usize {
+        let xx = x.clamp(0, (width as i32) - 1) as u32;
+        let yy = y.clamp(0, (height as i32) - 1) as u32;
+        ((yy * width + xx) * 4) as usize
+    };
+
+    let get_gray = |x: i32, y: i32| -> f32 {
+        let i = idx(x, y);
+        let r = src.as_raw()[i] as f32;
+        let g = src.as_raw()[i + 1] as f32;
+        let b = src.as_raw()[i + 2] as f32;
+        (0.299 * r + 0.587 * g + 0.114 * b) / 255.0
+    };
+
+    let sample_rgba = |xf: f32, yf: f32| -> [f32; 3] {
+        // Bilinear sample in RGB, normalized 0..1
+        let x0 = xf.floor() as i32;
+        let y0 = yf.floor() as i32;
+        let x1 = x0 + 1;
+        let y1 = y0 + 1;
+        let tx = xf - x0 as f32;
+        let ty = yf - y0 as f32;
+        let w00 = (1.0 - tx) * (1.0 - ty);
+        let w10 = tx * (1.0 - ty);
+        let w01 = (1.0 - tx) * ty;
+        let w11 = tx * ty;
+        let i00 = idx(x0, y0);
+        let i10 = idx(x1, y0);
+        let i01 = idx(x0, y1);
+        let i11 = idx(x1, y1);
+        let raw = src.as_raw();
+        let c = |i: usize| -> [f32; 3] {
+            [raw[i] as f32 / 255.0, raw[i + 1] as f32 / 255.0, raw[i + 2] as f32 / 255.0]
+        };
+        let c00 = c(i00);
+        let c10 = c(i10);
+        let c01 = c(i01);
+        let c11 = c(i11);
+        [
+            c00[0] * w00 + c10[0] * w10 + c01[0] * w01 + c11[0] * w11,
+            c00[1] * w00 + c10[1] * w10 + c01[1] * w01 + c11[1] * w11,
+            c00[2] * w00 + c10[2] * w10 + c01[2] * w01 + c11[2] * w11,
+        ]
+    };
+
+    // Precompute center
+    let cx = (width as f32) * 0.5;
+    let cy = (height as f32) * 0.5;
+    let two_sigma2 = 2.0 * swirl_radius * swirl_radius;
+
+    for y in 0..(height as i32) {
+        for x in 0..(width as i32) {
+            // Gradient
+            let gx = get_gray(x + 1, y) - get_gray(x - 1, y);
+            let gy = get_gray(x, y + 1) - get_gray(x, y - 1);
+            // Tangent (isophote) direction
+            let mut theta = gy.atan2(gx) + PI * 0.5;
+
+            // Add gentle swirl around center
+            let dx = x as f32 - cx;
+            let dy = y as f32 - cy;
+            let r2 = dx * dx + dy * dy;
+            let swirl = swirl_strength * (-r2 / two_sigma2).exp();
+            theta += swirl;
+
+            let dirx = theta.cos();
+            let diry = theta.sin();
+
+            // Line integral convolution along stroke direction
+            let mut sum = [0.0f32; 3];
+            let mut wsum = 0.0f32;
+            let mut t = -(stroke_len as i32);
+            while t <= stroke_len {
+                let tf = t as f32;
+                let wx = x as f32 + tf * dirx;
+                let wy = y as f32 + tf * diry;
+                let w = (- (tf * tf) / (2.0 * sigma_t * sigma_t)).exp();
+                let c = sample_rgba(wx, wy);
+                sum[0] += c[0] * w;
+                sum[1] += c[1] * w;
+                sum[2] += c[2] * w;
+                wsum += w;
+                t += 1;
             }
-            
-            new_img.put_pixel(x, y, new_pixel);
+            let mut r = (sum[0] / wsum).clamp(0.0, 1.0);
+            let mut g = (sum[1] / wsum).clamp(0.0, 1.0);
+            let mut b = (sum[2] / wsum).clamp(0.0, 1.0);
+
+            // Palette tilt: push towards yellows (R+G) and blues, slight saturation boost
+            let avg = (r + g + b) / 3.0;
+            let s_boost = 0.25;
+            r = avg + (r - avg) * (1.0 + s_boost);
+            g = avg + (g - avg) * (1.0 + s_boost * 0.9);
+            b = avg + (b - avg) * (1.0 + s_boost * 1.1);
+            // Yellow/blue bias
+            r = (r * 1.05 + 0.03).clamp(0.0, 1.0);
+            g = (g * 1.05 + 0.02).clamp(0.0, 1.0);
+            b = (b * 1.08 + 0.00).clamp(0.0, 1.0);
+
+            // Subtle dither
+            let n = (rand::random::<u8>() as f32 / 255.0 - 0.5) * 0.01;
+            let to_u8 = |v: f32| ((v + n).clamp(0.0, 1.0) * 255.0) as u8;
+            out.put_pixel(x as u32, y as u32, Rgba([to_u8(r), to_u8(g), to_u8(b), 255]));
         }
     }
-    
-    DynamicImage::ImageRgba8(new_img)
+
+    DynamicImage::ImageRgba8(out)
 }
 
 fn apply_picasso_style(img: &DynamicImage) -> DynamicImage {
