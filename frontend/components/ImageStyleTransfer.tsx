@@ -183,24 +183,24 @@ export default function ImageStyleTransfer() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto py-12">
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Left Column - Image Upload and Style Selection */}
         <div className="space-y-6">
           {/* Image Upload */}
-          <div className="card">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="card animate-float">
+            <h3 className="text-xl font-semibold text-white mb-4">
               Upload Image
             </h3>
 
             {!imagePreview ? (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-colors"
+                className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center cursor-pointer hover:border-accent-500/50 hover:bg-white/5 transition-colors"
               >
                 <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-2">Click to upload an image</p>
-                <p className="text-sm text-gray-500">Supports JPG, PNG, WebP</p>
+                <p className="text-gray-200 mb-2">Click to upload an image</p>
+                <p className="text-sm text-gray-400">Supports JPG, PNG, WebP</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -208,16 +208,16 @@ export default function ImageStyleTransfer() {
                   <img
                     src={imagePreview}
                     alt="Preview"
-                    className="w-full h-64 object-cover rounded-lg"
+                    className="w-full h-64 object-cover rounded-lg shadow-lifted"
                   />
                   <button
                     onClick={() => setImagePreview("")}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors"
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors shadow"
                   >
                     ×
                   </button>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-300">
                   Selected: {selectedImage?.name}
                 </p>
               </div>
@@ -233,8 +233,8 @@ export default function ImageStyleTransfer() {
           </div>
 
           {/* Style Selection */}
-          <div className="card">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="card animate-float">
+            <h3 className="text-xl font-semibold text-white mb-4">
               Choose Style
             </h3>
             <div className="grid gap-3">
@@ -242,10 +242,10 @@ export default function ImageStyleTransfer() {
                 <button
                   key={style.id}
                   onClick={() => handleStyleSelect(style.id)}
-                  className={`p-4 rounded-lg border-2 text-left transition-all ${
+                  className={`p-4 rounded-lg border-2 text-left transition-all backdrop-blur ${
                     selectedStyle === style.id
-                      ? "border-primary-500 bg-primary-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-accent-500/70 bg-white/5"
+                      : "border-white/10 hover:border-white/20"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -253,10 +253,8 @@ export default function ImageStyleTransfer() {
                       className={`w-4 h-4 rounded-full bg-gradient-to-r ${style.color}`}
                     />
                     <div>
-                      <h4 className="font-semibold text-gray-800">
-                        {style.name}
-                      </h4>
-                      <p className="text-sm text-gray-600">
+                      <h4 className="font-semibold text-white">{style.name}</h4>
+                      <p className="text-sm text-gray-300">
                         {style.description}
                       </p>
                     </div>
@@ -270,7 +268,7 @@ export default function ImageStyleTransfer() {
           <button
             onClick={processImage}
             disabled={!selectedImage || !selectedStyle || isProcessing}
-            className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full btn-primary disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_24px_rgba(168,85,247,0.35)] hover:shadow-[0_0_36px_rgba(59,130,246,0.55)]"
           >
             {isProcessing ? (
               <>
@@ -293,25 +291,23 @@ export default function ImageStyleTransfer() {
 
         {/* Right Column - Results */}
         <div className="space-y-6">
-          <div className="card">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
-              Results
-            </h3>
+          <div className="card animate-float">
+            <h3 className="text-xl font-semibold text-white mb-4">Results</h3>
 
             {!result && !isProcessing && (
-              <div className="text-center py-12 text-gray-500">
-                <ImageIcon className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <div className="text-center py-12 text-gray-400">
+                <ImageIcon className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                 <p>Upload an image and select a style to see results</p>
               </div>
             )}
 
             {isProcessing && (
               <div className="text-center py-12">
-                <Loader2 className="w-16 h-16 mx-auto mb-4 text-primary-600 animate-spin" />
-                <p className="text-lg font-medium text-gray-700">
+                <Loader2 className="w-16 h-16 mx-auto mb-4 text-accent-500 animate-spin" />
+                <p className="text-lg font-medium text-gray-200">
                   Processing your image...
                 </p>
-                <p className="text-gray-500">This may take a few seconds</p>
+                <p className="text-gray-400">This may take a few seconds</p>
               </div>
             )}
 
@@ -320,8 +316,8 @@ export default function ImageStyleTransfer() {
                 <div
                   className={`p-4 rounded-lg ${
                     result.success
-                      ? "bg-green-50 text-green-800"
-                      : "bg-red-50 text-red-800"
+                      ? "bg-emerald-500/15 text-emerald-300"
+                      : "bg-rose-500/15 text-rose-300"
                   }`}
                 >
                   <p className="font-medium">{result.message}</p>
@@ -333,13 +329,13 @@ export default function ImageStyleTransfer() {
                       <img
                         src={result.processed_image_data}
                         alt="Processed result"
-                        className="w-full h-64 object-cover rounded-lg"
+                        className="w-full h-64 object-cover rounded-lg shadow-lifted"
                       />
                     </div>
 
                     <button
                       onClick={downloadResult}
-                      className="w-full btn-primary flex items-center justify-center gap-2"
+                      className="w-full btn-primary flex items-center justify-center gap-2 animate-glow"
                     >
                       <Download className="w-5 h-5" />
                       Download Result
