@@ -14,8 +14,7 @@
     "next": "14.0.0",
     "onnxruntime-web": "^1.22.0",
     "react": "^18",
-    "react-dom": "^18",
-    "tailwind": "^4.0.0"
+    "react-dom": "^18"
   },
   "devDependencies": {
     "@types/node": "^20",
