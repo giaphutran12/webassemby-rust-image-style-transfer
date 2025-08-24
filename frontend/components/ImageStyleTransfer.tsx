@@ -268,7 +268,7 @@ export default function ImageStyleTransfer() {
           <button
             onClick={processImage}
             disabled={!selectedImage || !selectedStyle || isProcessing}
-            className="w-full btn-primary disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_24px_rgba(168,85,247,0.35)] hover:shadow-[0_0_36px_rgba(59,130,246,0.55)]"
+            className="w-full btn-primary disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_24px_rgba(168,85,247,0.35)] hover:shadow-[0_0_36px_rgba(59,130,246,0.55)] relative z-10"
           >
             {isProcessing ? (
               <>
@@ -277,7 +277,7 @@ export default function ImageStyleTransfer() {
               </>
             ) : (
               <>
-                <Sparkles className="w-5 h-5" />
+                <Sparkles className="w-5 h-5 relative z-10" />
                 Apply Style Transfer
               </>
             )}
