@@ -34,7 +34,7 @@ async function runDemo() {
     mockImageData[i] = Math.floor(Math.random() * 256);
   }
 
-  const styles = ["vangogh", "picasso", "cyberpunk"];
+  const styles = ["onnx_udnie", "onnx_candy", "onnx_mosaic"];
 
   for (const style of styles) {
     console.log(`🎨 Testing ${style} style...`);

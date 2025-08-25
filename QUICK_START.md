@@ -38,7 +38,7 @@ Navigate to [http://localhost:3000](http://localhost:3000)
 
 - **Beautiful UI**: Modern, responsive design with Tailwind CSS
 - **Image Upload**: Drag & drop or click to upload images
-- **Style Selection**: Choose from Van Gogh, Picasso, or Cyberpunk
+- **Style Selection**: Choose from ONNX fast neural style models
 - **Real-time Processing**: Watch your images transform with WebAssembly
 - **Download Results**: Save your styled images
 
@@ -77,16 +77,14 @@ npm run build:wasm
 ## 📱 Test the App
 
 1. **Upload an image** (JPG, PNG, or WebP)
-2. **Select a style** (Van Gogh, Picasso, or Cyberpunk)
+2. **Select a style** (ONNX fast neural style models)
 3. **Click "Apply Style Transfer"**
 4. **Wait for processing** (WebAssembly will handle this)
 5. **Download your result**
 
 ## 🎨 Available Styles
 
-- **Van Gogh**: Impressionist with vibrant yellows and blues
-- **Picasso**: Cubist with geometric shapes and high contrast
-- **Cyberpunk**: Futuristic with neon colors and digital effects
+- **ONNX Fast Models**: High-quality neural style transfer with optimized performance
 
 ## 🚀 Next Steps
 

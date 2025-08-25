@@ -4,7 +4,7 @@ A modern web application that transforms images using AI-powered style transfer,
 
 ## Features
 
-- 🎨 **Multiple Art Styles**: Van Gogh, Picasso, and Cyberpunk
+- 🎨 **Multiple Art Styles**: ONNX fast neural style models
 - ⚡ **High Performance**: Image processing powered by WebAssembly and Rust
 - 🖼️ **Multiple Formats**: Support for JPG, PNG, and WebP images
 - 📱 **Responsive Design**: Beautiful UI that works on all devices
@@ -103,30 +103,14 @@ webassembly-image-transfer/
 ## How It Works
 
 1. **Image Upload**: Users upload images through a drag-and-drop interface
-2. **Style Selection**: Choose from predefined art styles (Van Gogh, Picasso, Cyberpunk)
+2. **Style Selection**: Choose from ONNX fast neural style models
 3. **WebAssembly Processing**: Images are sent to Rust-compiled WebAssembly modules
 4. **Style Application**: Custom algorithms apply artistic transformations
 5. **Result Display**: Processed images are displayed with download options
 
 ## Style Algorithms
 
-### Van Gogh Style
-
-- Enhances yellows and blues for impressionist feel
-- Adds brush stroke effects with noise
-- Increases saturation for vibrant colors
-
-### Picasso Style
-
-- High contrast black and white conversion
-- Geometric pattern overlays
-- Cubist-inspired pixel manipulation
-
-### Cyberpunk Style
-
-- Neon color enhancement
-- Digital scan line effects
-- Futuristic color palette
+The application uses ONNX fast neural style models for instant image transformations. These models provide high-quality artistic style transfer with optimized performance.
 
 ## Customization
 
@@ -168,40 +152,4 @@ webassembly-image-transfer/
 
 3. **Build errors**
    - Update Rust to latest stable version
-   - Clear cargo cache: `cargo clean`
-   - Reinstall wasm-pack
-
-### Debug Mode
-
-Enable debug logging in the browser console:
-
-```javascript
-localStorage.setItem("debug", "true");
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- [Rust WebAssembly](https://rustwasm.github.io/) for the excellent tooling
-- [Next.js](https://nextjs.org/) for the React framework
-- [Tailwind CSS](https://tailwindcss.com/) for the styling system
-
-## Future Enhancements
-
-- [ ] Real-time style preview
-- [ ] Custom style uploads
-- [ ] Batch processing
-- [ ] Advanced AI models
-- [ ] Social sharing features
-- [ ] Style marketplace
+   - Clear cargo cache: `

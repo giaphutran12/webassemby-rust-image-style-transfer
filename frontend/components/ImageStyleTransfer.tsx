@@ -18,24 +18,6 @@ interface StyleTransferResult {
 }
 
 const styles = [
-  {
-    id: "vangogh",
-    name: "Van Gogh",
-    description: "Impressionist style with vibrant yellows and blues",
-    color: "from-yellow-400 to-blue-500",
-  },
-  {
-    id: "picasso",
-    name: "Picasso",
-    description: "Cubist style with geometric shapes and high contrast",
-    color: "from-red-500 to-purple-600",
-  },
-  {
-    id: "cyberpunk",
-    name: "Cyberpunk",
-    description: "Futuristic style with neon colors and digital effects",
-    color: "from-pink-500 to-cyan-400",
-  },
   // ONNX fast styles
   {
     id: "onnx_udnie",

@@ -25,8 +25,7 @@ export default function Home() {
         </h1>
         <p className="text-lg md:text-xl text-gray-100 max-w-3xl mx-auto">
           Transform your images with AI‑powered style transfer using WebAssembly
-          and Rust. Choose from Van Gogh, Picasso, Cyberpunk, or ONNX fast
-          styles.
+          and Rust. Choose from ONNX fast styles for instant transformations.
         </p>
         <div className="flex items-center justify-center gap-2 mt-4 text-accent-300">
           <Sparkles className="w-6 h-6" />
@@ -83,7 +82,7 @@ export default function Home() {
               Choose Style
             </h3>
             <p className="text-gray-300">
-              Pick from Van Gogh, Picasso, or Cyberpunk styles
+              Pick from our fast ONNX neural style models
             </p>
           </motion.div>
 

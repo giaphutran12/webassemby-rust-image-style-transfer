@@ -92,9 +92,7 @@ npm run build:frontend
 
 #### Rust Image Processing
 
-- `apply_van_gogh_style()`: Impressionist style transformation
-- `apply_picasso_style()`: Cubist style transformation
-- `apply_cyberpunk_style()`: Futuristic style transformation
+The application currently supports ONNX fast neural style models for image transformation.
 
 ## Development Tips
 
