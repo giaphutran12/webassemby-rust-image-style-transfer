@@ -9,7 +9,11 @@ import {
   Loader2,
 } from "lucide-react";
 import { loadWasmModule, processImageWithWasm } from "../lib/wasm-loader";
-import { runFastStyleOnnx, type FastStyleId } from "../lib/onnx-style";
+import {
+  runFastStyleOnnx,
+  runAdversarialInception,
+  type FastStyleId,
+} from "../lib/onnx-style";
 
 interface StyleTransferResult {
   success: boolean;
@@ -36,6 +40,24 @@ const styles = [
     name: "Mosaic (ONNX)",
     description: "Fast neural style model",
     color: "from-emerald-500 to-teal-400",
+  },
+  {
+    id: "onnx_rain-princess",
+    name: "Rain Princess (ONNX)",
+    description: "Romantic painterly style",
+    color: "from-purple-500 to-pink-400",
+  },
+  {
+    id: "onnx_pointilism",
+    name: "Pointilism (ONNX)",
+    description: "Pointillist painting style",
+    color: "from-yellow-500 to-orange-400",
+  },
+  {
+    id: "onnx_adv-inception",
+    name: "Adversarial Inception (ONNX)",
+    description: "Image classification model",
+    color: "from-red-500 to-pink-400",
   },
 ];
 
@@ -107,14 +129,26 @@ export default function ImageStyleTransfer() {
       let result;
 
       if (selectedStyle.startsWith("onnx_")) {
-        // Run ONNX Fast Neural Style
-        const styleId = selectedStyle.replace("onnx_", "") as FastStyleId;
-        const dataUrl = await runFastStyleOnnx(imagePreview, styleId);
-        result = {
-          success: true,
-          message: `Successfully applied ${styleId} (ONNX)`,
-          processed_image_data: dataUrl,
-        };
+        const modelId = selectedStyle.replace("onnx_", "");
+
+        if (modelId === "adv-inception") {
+          // Run Adversarial Inception model
+          const inceptionResult = await runAdversarialInception(imagePreview);
+          result = {
+            success: true,
+            message: `Adversarial Inception: ${inceptionResult.classification}`,
+            processed_image_data: inceptionResult.image,
+          };
+        } else {
+          // Run ONNX Fast Neural Style
+          const styleId = modelId as FastStyleId;
+          const dataUrl = await runFastStyleOnnx(imagePreview, styleId);
+          result = {
+            success: true,
+            message: `Successfully applied ${styleId} (ONNX)`,
+            processed_image_data: dataUrl,
+          };
+        }
       } else if (
         wasmModule.process_image_style &&
         typeof wasmModule.process_image_style === "function"

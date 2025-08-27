@@ -4,7 +4,13 @@ A modern web application that transforms images using AI-powered style transfer,
 
 ## Features
 
-- 🎨 **Multiple Art Styles**: ONNX fast neural style models
+- 🎨 **5 Art Styles**: ONNX fast neural style models including:
+  - **Udnie**: Abstract artistic style
+  - **Candy**: Vibrant candy-like colors
+  - **Mosaic**: Geometric mosaic patterns
+  - **Rain Princess**: Romantic painterly style
+  - **Pointilism**: Pointillist painting style
+- 🔍 **1 Computer Vision Model**: Adversarial Inception v3 for image classification
 - ⚡ **High Performance**: Image processing powered by WebAssembly and Rust
 - 🖼️ **Multiple Formats**: Support for JPG, PNG, and WebP images
 - 📱 **Responsive Design**: Beautiful UI that works on all devices
@@ -50,7 +56,18 @@ Before you begin, ensure you have the following installed:
    npm install
    ```
 
-4. **Build the WebAssembly module**
+4. **Download ONNX Style Models**
+
+   ```bash
+   # On Windows (PowerShell)
+   .\download-models.ps1
+
+   # On Unix/Linux/macOS
+   chmod +x download-models.sh
+   ./download-models.sh
+   ```
+
+5. **Build the WebAssembly module**
    ```bash
    npm run build:wasm
    ```
@@ -92,11 +109,16 @@ webassembly-image-transfer/
 ├── frontend/                 # Next.js React application
 │   ├── app/                 # App Router pages
 │   ├── components/          # React components
+│   ├── public/models/       # ONNX models
+│   │   ├── fast-style/     # 5 Fast Neural Style models
+│   │   └── computer-vision/ # 1 Computer Vision model
 │   └── package.json        # Frontend dependencies
 ├── rust-backend/            # Rust code for WASM compilation
 │   ├── src/                # Rust source code
 │   └── Cargo.toml         # Rust dependencies
 ├── wasm/                    # Compiled WebAssembly files
+├── download-models.ps1     # Windows model download script
+├── download-models.sh      # Unix/Linux model download script
 └── package.json            # Root workspace configuration
 ```
 
